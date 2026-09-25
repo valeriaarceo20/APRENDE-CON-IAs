@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AprendeConIA | Metodología de Aprendizaje Activo con IA</title>
+
+  <!-- Google Fonts: Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Import Map para SDK de Google GenAI -->
+  <script type="importmap">
+    {
+      "imports": {
+        "@google/genai": "https://esm.run/@google/genai"
+      }
+    }
+  </script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Poppins', 'sans-serif'],
+          },
+          colors: {
+            parchment: {
+              DEFAULT: '#F6EEDB',
+              50: '#FCF9F3',
+              100: '#F7F0E0',
+              200: '#EFE2C5',
+              300: '#E3CF9F',
+              400: '#CDB47B',
+              800: '#69512A',
+              900: '#3D2D14'
+            },
+            crimson: {
+              DEFAULT: '#DC2626',
+              dark: '#B91C1C',
+              deep: '#991B1B',
+              subtle: '#FEF2F2'
+            },
+            grape: {
+              DEFAULT: '#4A123F',
+              dark: '#35092C',
+              deep: '#26041F',
+              accent: '#6E1B5D',
+              light: '#F8EEF6'
+            },
+            brass: {
+              DEFAULT: '#C29B38',
+              dark: '#8C6C1B'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    * {
+      font-family: 'Poppins', sans-serif !important;
+    }
+
+    /* Fondo cartográfico tipo pergamino sutil */
+    .bg-cartography {
+      background-color: #F7EFE1;
+      background-image: 
+        radial-gradient(circle at 18% 22%, rgba(220, 38, 38, 0.03) 0%, transparent 45%),
+        radial-gradient(circle at 85% 75%, rgba(74, 18, 63, 0.04) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(246, 238, 219, 0.6) 0%, rgba(220, 203, 168, 0.5) 100%),
+        url("data:image/svg+xml,%3Csvg width='180' height='180' viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.07'/%3E%3Cpath d='M0 45 L180 45 M0 135 L180 135 M45 0 L45 180 M135 0 L135 180' stroke='%23C29B38' stroke-width='0.4' stroke-dasharray='3 5' opacity='0.16' fill='none'/%3E%3C/svg%3E");
+    }
+
+    /* Barra lateral */
+    .nav-sidebar {
+      background: linear-gradient(180deg, #1A0D15 0%, #12070D 100%);
+      box-shadow: 4px 0 28px rgba(0, 0, 0, 0.35);
+    }
+
+    /* Tarjetas pergamino con marco */
+    .carta-pergamino {
+      background: #FAF5EB;
+      border: 1.5px solid #D8C39A;
+      box-shadow: 0 8px 24px -4px rgba(74, 18, 63, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+      position: relative;
+    }
+
+    .carta-pergamino::after {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      border: 1px dashed rgba(194, 155, 56, 0.35);
+      border-radius: inherit;
+      pointer-events: none;
+    }
+
+    /* Animación brújula */
+    @keyframes compassNeedle {
+      0% { transform: rotate(0deg); }
+      30% { transform: rotate(18deg); }
+      70% { transform: rotate(-14deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    .animate-compass {
+      animation: compassNeedle 7s ease-in-out infinite;
+    }
+
+    /* Sombrero flotante al dar click */
+    @keyframes floatSombrero {
+      0% {
+        opacity: 0.95;
+        transform: translate(-50%, -50%) scale(0.6) rotate(0deg);
+      }
+      50% {
+        opacity: 0.85;
+        transform: translate(-50%, -85px) scale(1.15) rotate(-10deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -140px) scale(0.9) rotate(15deg);
+      }
+    }
+
+    .hat-particle {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      animation: floatSombrero 1s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+    }
+
+    /* Scrollbars personalizadas */
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #E8DECA;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #A68748;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #846524;
+    }
+  </style>
+</head>
+
+<body class="h-full bg-cartography text-stone-800 flex overflow-hidden font-sans antialiased selection:bg-crimson selection:text-white">
+
+  <!-- ==================== MENÚ LATERAL IZQUIERDO ==================== -->
+  <aside class="nav-sidebar w-80 shrink-0 flex flex-col z-30 border-r border-brass/25 relative">
+    
+    <!-- Encabezado del Menú -->
+    <div class="p-6 border-b border-white/10 bg-black/25">
+      <div class="flex items-center gap-3.5">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-crimson to-grape border border-brass/40 flex items-center justify-center p-2 shadow-lg">
+          <svg viewBox="0 0 100 100" class="w-full h-full text-brass drop-shadow">
+            <circle cx="50" cy="50" r="44" stroke="currentColor" stroke-width="2.5" fill="none" opacity="0.6"/>
+            <polygon points="50,8 57,43 50,38 43,43" fill="#DC2626"/>
+            <polygon points="50,92 57,57 50,62 43,57" fill="#FAF5EB"/>
+            <polygon points="92,50 57,57 62,50 57,43" fill="#FAF5EB"/>
+            <polygon points="8,50 43,57 38,50 43,43" fill="#FAF5EB"/>
+            <circle cx="50" cy="50" r="5" fill="#C29B38"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-base font-extrabold text-white tracking-wide leading-tight">APRENDE CON IA</h1>
+          <p class="text-[11px] text-brass font-medium tracking-wide">Metodología de Aprendizaje Activo</p>
+        </div>
+      </div>
+      
+      <div class="mt-4 px-3.5 py-1.5 rounded-xl bg-crimson/15 border border-crimson/40 text-center">
+        <p class="text-[11px] text-red-200 font-semibold tracking-wide flex items-center justify-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-crimson animate-pulse"></span>
+          Guía Académica y Pedagógica
+        </p>
+      </div>
+    </div>
+
+    <!-- Navegación Primaria -->
+    <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+      
+      <button onclick="navigateSection('manifiesto')" id="nav-btn-manifiesto" class="nav-item w-full px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all duration-200 text-stone-300 hover:text-white hover:bg-white/5 border border-transparent">
+        <i data-lucide="book-marked" class="w-4 h-4 text-brass"></i>
+        <span>1. Manifiesto Pedagógico</span>
+      </button>
+
+      <button onclick="navigateSection('parts')" id="nav-btn-parts" class="nav-item w-full px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all duration-200 text-stone-300 hover:text-white hover:bg-white/5 border border-transparent">
+        <i data-lucide="compass" class="w-4 h-4 text-brass"></i>
+        <span>2. Constructor PARTS</span>
+      </button>
+
+      <button onclick="navigateSection('lab')" id="nav-btn-lab" class="nav-item w-full px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all duration-200 text-white bg-crimson shadow-md border border-red-500/40">
+        <i data-lucide="brain-circuit" class="w-4 h-4 text-red-100"></i>
+        <span>3. Laboratorio de IA (Gemini)</span>
+      </button>
+
+      <button onclick="navigateSection('rota')" id="nav-btn-rota" class="nav-item w-full px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all duration-200 text-stone-300 hover:text-white hover:bg-white/5 border border-transparent">
+        <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+        <span>4. Filtro de Integridad ROTA</span>
+      </button>
+
+      <button onclick="navigateSection('casos')" id="nav-btn-casos" class="nav-item w-full px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all duration-200 text-stone-300 hover:text-white hover:bg-white/5 border border-transparent">
+        <i data-lucide="library" class="w-4 h-4 text-amber-300"></i>
+        <span>5. Casos Prácticos</span>
+      </button>
+
+    </nav>
+
+    <!-- Marca de Autoría -->
+    <div class="p-4 border-t border-white/10 bg-black/40">
+      <div class="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center space-y-1">
+        <p class="text-[11px] text-stone-300 font-medium">Desarrollado y estructurado por</p>
+        <a href="https://instagram.com/itsvaleriaarceo" target="_blank" rel="noopener noreferrer" class="text-sm font-bold text-brass hover:text-amber-200 transition-colors inline-flex items-center gap-1.5">
+          <i data-lucide="compass" class="w-3.5 h-3.5 text-crimson"></i>
+          @itsvaleriaarceo
+        </a>
+        <p class="text-[10px] text-stone-400 leading-tight">Sígueme en Instagram para aprender más sobre IA y metodologías de impacto</p>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ==================== ÁREA DE TRABAJO PRINCIPAL ==================== -->
+  <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+    
+    <!-- Barra Superior -->
+    <header class="h-16 border-b border-stone-300/80 bg-parchment-50/90 backdrop-blur-md px-6 flex items-center justify-between z-20">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full border border-brass bg-amber-50 shadow-sm flex items-center justify-center animate-compass">
+          <svg viewBox="0 0 24 24" class="w-5 h-5 text-crimson">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+            <polygon points="12,4 15,12 12,10 9,12" fill="#DC2626"/>
+            <polygon points="12,20 15,12 12,14 9,12" fill="#4A123F"/>
+          </svg>
+        </div>
+        <div>
+          <span id="active-section-indicator" class="text-xs uppercase tracking-wider font-bold text-crimson">Sección 3: Laboratorio de IA (Gemini)</span>
+          <p class="text-[11px] text-stone-500 font-normal">Formación universitaria con criterio, honestidad y profundidad</p>
+        </div>
+      </div>
+
+      <!-- Tag de Metodología y Configuración de Clave -->
+      <div class="flex items-center gap-2">
+        <button onclick="openApiKeyModal()" class="flex items-center gap-1.5 text-xs font-semibold text-stone-700 bg-white hover:bg-stone-100 px-3 py-1.5 rounded-full border border-stone-300 transition shadow-sm">
+          <i data-lucide="key" class="w-3.5 h-3.5 text-brass"></i>
+          <span id="api-status-badge">Conexión: Tutor Autónomo</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Contenedor con Scroll de las Secciones -->
+    <div class="flex-1 overflow-y-auto p-4 sm:p-8 space-y-8">
+
+      <!-- ==================== SECCIÓN 1: MANIFIESTO PEDAGÓGICO ==================== -->
+      <section id="sec-manifiesto" class="hidden max-w-5xl mx-auto space-y-8">
+        
+        <div class="carta-pergamino rounded-3xl p-8 sm:p-12 border-2 border-stone-300/80">
+          <div class="max-w-3xl space-y-5 relative z-10">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-crimson text-white text-xs font-semibold shadow-sm">
+              <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i>
+              <span>El Principio Fundamental</span>
+            </div>
+            
+            <h2 class="text-3xl sm:text-5xl font-extrabold text-stone-900 tracking-tight leading-tight">
+              Usar inteligencia artificial <span class="text-crimson">sin apagar el pensamiento crítico</span>.
+            </h2>
+            
+            <p class="text-stone-700 text-base sm:text-lg leading-relaxed font-normal">
+              El debate universitario no es sobre prohibir o rendirse ante las herramientas de inteligencia artificial. El verdadero valor académico consiste en convertir a modelos como Google Gemini en un <strong>gimnasio mental de entrenamiento</strong> y no en una máquina de resolver tareas que te deje sin argumentos frente a tus docentes o en el mundo laboral.
+            </p>
+
+            <div class="pt-2 flex flex-wrap gap-3">
+              <button onclick="navigateSection('parts')" class="px-5 py-3 rounded-xl bg-crimson hover:bg-crimson-dark text-white font-semibold text-sm transition-all shadow-md flex items-center gap-2">
+                <i data-lucide="compass" class="w-4 h-4 text-brass"></i>
+                Estructurar Instrucción con PARTS
+              </button>
+              <button onclick="navigateSection('lab')" class="px-5 py-3 rounded-xl bg-grape text-white hover:bg-grape-dark font-semibold text-sm transition-all shadow-md flex items-center gap-2">
+                <i data-lucide="brain-circuit" class="w-4 h-4 text-red-300"></i>
+                Iniciar Tutoría Socrática en Vivo
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="carta-pergamino rounded-2xl p-6 border-red-300 bg-red-50/50">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-xl bg-red-100 text-crimson flex items-center justify-center font-bold">
+                <i data-lucide="x-circle" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-stone-900 text-lg">El Riesgo del "Copiar y Pegar"</h3>
+                <p class="text-xs text-crimson font-semibold">Atajo mecánico sin desarrollo de competencias</p>
+              </div>
+            </div>
+            <ul class="space-y-3 text-xs sm:text-sm text-stone-700">
+              <li class="flex items-start gap-2">
+                <i data-lucide="x" class="w-4 h-4 text-crimson shrink-0 mt-0.5"></i>
+                <span>Pedirle a la herramienta redactar el informe o ensayo completo sin haber comprendido las lecturas de base.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="x" class="w-4 h-4 text-crimson shrink-0 mt-0.5"></i>
+                <span>Incapacidad de defender la metodología, los números o las conclusiones durante la evaluación oral en clase.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="x" class="w-4 h-4 text-crimson shrink-0 mt-0.5"></i>
+                <span>Pérdida progresiva de la autonomía analítica y dependencia ante problemas complejos del ámbito profesional.</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="carta-pergamino rounded-2xl p-6 border-stone-300 bg-white/70">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-xl bg-grape-light text-grape flex items-center justify-center font-bold">
+                <i data-lucide="check-circle-2" class="w-6 h-6 text-crimson"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-stone-900 text-lg">El Método de Aprendizaje Activo</h3>
+                <p class="text-xs text-grape font-semibold">La IA como interlocutor dialéctico y auditor riguroso</p>
+              </div>
+            </div>
+            <ul class="space-y-3 text-xs sm:text-sm text-stone-700">
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"></i>
+                <span>Instruir al modelo para que adopte el rol de evaluador estricto y formule preguntas sobre los puntos débiles de tu proyecto.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"></i>
+                <span>Solicitar analogías didácticas que permitan asimilar conceptos matemáticos o teóricos de alta densidad.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"></i>
+                <span>Validación rigurosa de fuentes primarias y dominio conceptual propio antes de realizar la entrega final.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==================== SECCIÓN 2: CONSTRUCTOR PARTS ==================== -->
+      <section id="sec-parts" class="hidden max-w-5xl mx-auto space-y-8">
+        
+        <div class="carta-pergamino rounded-3xl p-6 sm:p-8">
+          <div class="mb-6">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-crimson/10 text-crimson text-xs font-bold mb-2">
+              <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
+              <span>Ingeniería Pedagógica de Prompts</span>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-stone-900">Constructor de Instrucciones con Método PARTS</h2>
+            <p class="text-sm text-stone-600 mt-1 font-normal">
+              Estructura instrucciones profesionales que orienten a la IA a auditar, cuestionar y enriquecer tu trabajo sin redactarlo por ti.
+            </p>
+          </div>
+
+          <div class="grid lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-7 space-y-5">
+              
+              <!-- P -->
+              <div class="space-y-2">
+                <label class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-stone-800">
+                  <span class="flex items-center gap-2">
+                    <span class="w-5 h-5 rounded bg-crimson text-white flex items-center justify-center text-[11px]">P</span>
+                    Papel (Rol Académico)
+                  </span>
+                  <span class="text-[11px] text-stone-400 font-normal">¿Qué perspectiva asume?</span>
+                </label>
+
+                <div class="flex flex-wrap gap-2 text-xs">
+                  <button type="button" onclick="setPartsArchetype('auditor')" class="px-2.5 py-1 rounded-lg bg-stone-200/80 hover:bg-stone-300 text-stone-800 transition font-medium border border-stone-300">Auditor Metodológico</button>
+                  <button type="button" onclick="setPartsArchetype('evaluador')" class="px-2.5 py-1 rounded-lg bg-stone-200/80 hover:bg-stone-300 text-stone-800 transition font-medium border border-stone-300">Evaluador Crítico</button>
+                  <button type="button" onclick="setPartsArchetype('tutor')" class="px-2.5 py-1 rounded-lg bg-stone-200/80 hover:bg-stone-300 text-stone-800 transition font-medium border border-stone-300">Tutor Pedagógico</button>
+                </div>
+
+                <input type="text" id="input-p" oninput="compilePartsPrompt()" value="Auditor y evaluador pedagógico especializado en proyectos académicos de impacto" class="w-full px-4 py-2.5 rounded-xl border border-stone-300 bg-white text-xs sm:text-sm focus:ring-2 focus:ring-crimson outline-none transition">
+              </div>
+
+              <!-- A -->
+              <div class="space-y-2">
+                <label class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-stone-800">
+                  <span class="flex items-center gap-2">
+                    <span class="w-5 h-5 rounded bg-grape text-white flex items-center justify-center text-[11px]">A</span>
+                    Acción (Misión de Análisis)
+                  </span>
+                  <span class="text-[11px] text-crimson font-medium">Evita pedir redacción completa</span>
+                </label>
+                <textarea id="input-a" oninput="compilePartsPrompt()" rows="2" class="w-full px-4 py-2.5 rounded-xl border border-stone-300 bg-white text-xs sm:text-sm focus:ring-2 focus:ring-crimson outline-none transition resize-none">Examina críticamente mi propuesta de proyecto y señala 3 puntos ciegos o fallas metodológicas que pondrían en riesgo su viabilidad. Formúlame 3 preguntas reflexivas para orientar mi solución.</textarea>
+              </div>
+
+              <!-- R -->
+              <div class="space-y-2">
+                <label class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-stone-800">
+                  <span class="flex items-center gap-2">
+                    <span class="w-5 h-5 rounded bg-brass text-white flex items-center justify-center text-[11px]">R</span>
+                    Referencias y Público
+                  </span>
+                  <span class="text-[11px] text-stone-400 font-normal">Contexto de la materia</span>
+                </label>
+                <input type="text" id="input-r" oninput="compilePartsPrompt()" value="Estudiante universitario preparándose para una defensa de propuesta ante un comité evaluador" class="w-full px-4 py-2.5 rounded-xl border border-stone-300 bg-white text-xs sm:text-sm focus:ring-2 focus:ring-crimson outline-none transition">
+              </div>
+
+              <!-- T -->
+              <div class="space-y-2">
+                <label class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-stone-800">
+                  <span class="flex items-center gap-2">
+                    <span class="w-5 h-5 rounded bg-stone-700 text-white flex items-center justify-center text-[11px]">T</span>
+                    Tono y Registro
+                  </span>
+                  <span class="text-[11px] text-stone-400 font-normal">Estilo</span>
+                </label>
+                <input type="text" id="input-t" oninput="compilePartsPrompt()" value="Directo, constructivo, exigente y sin tecnicismos innecesarios" class="w-full px-4 py-2.5 rounded-xl border border-stone-300 bg-white text-xs sm:text-sm focus:ring-2 focus:ring-crimson outline-none transition">
+              </div>
+
+              <!-- S -->
+              <div class="space-y-2">
+                <label class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-stone-800">
+                  <span class="flex items-center gap-2">
+                    <span class="w-5 h-5 rounded bg-stone-900 text-white flex items-center justify-center text-[11px]">S</span>
+                    Salida y Especificaciones
+                  </span>
+                  <span class="text-[11px] text-stone-400 font-normal">Límites y estructura</span>
+                </label>
+                <input type="text" id="input-s" oninput="compilePartsPrompt()" value="Una lista numerada con 3 objeciones concretas seguidas de 3 preguntas de reto. No superes las 200 palabras." class="w-full px-4 py-2.5 rounded-xl border border-stone-300 bg-white text-xs sm:text-sm focus:ring-2 focus:ring-crimson outline-none transition">
+              </div>
+
+            </div>
+
+            <!-- Panel Compilado con Vista Previa -->
+            <div class="lg:col-span-5 flex flex-col justify-between bg-stone-900 text-stone-100 rounded-2xl p-5 border border-stone-800 shadow-xl">
+              <div>
+                <div class="flex items-center justify-between pb-3 border-b border-stone-700 mb-3">
+                  <span class="text-xs uppercase tracking-wider font-semibold text-brass flex items-center gap-2">
+                    <i data-lucide="file-code" class="w-4 h-4"></i>
+                    Instrucción Estructurada Lista
+                  </span>
+                  <span id="prompt-char-count" class="text-[11px] text-stone-400 font-mono">0 caracteres</span>
+                </div>
+                
+                <div id="compiled-prompt-output" class="font-mono text-xs text-stone-200 leading-relaxed whitespace-pre-wrap max-h-96 overflow-y-auto bg-black/50 p-4 rounded-xl border border-stone-800 select-all">
+                </div>
+              </div>
+
+              <div class="pt-4 mt-4 border-t border-stone-700 space-y-2.5">
+                <button onclick="copyGeneratedPrompt()" class="w-full py-2.5 rounded-xl bg-crimson hover:bg-crimson-dark text-white font-bold text-xs transition flex items-center justify-center gap-2 shadow-md">
+                  <i data-lucide="copy" class="w-4 h-4"></i>
+                  <span>Copiar Instrucción Completa</span>
+                </button>
+                <button onclick="sendToAiLab()" class="w-full py-2.5 rounded-xl bg-grape hover:bg-grape-dark text-white font-bold text-xs transition flex items-center justify-center gap-2 border border-white/10">
+                  <i data-lucide="arrow-right-circle" class="w-4 h-4 text-red-300"></i>
+                  <span>Transferir al Laboratorio IA</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==================== SECCIÓN 3: LABORATORIO DE TUTORÍA IA ==================== -->
+      <section id="sec-lab" class="max-w-5xl mx-auto space-y-6">
+        
+        <div class="carta-pergamino rounded-3xl p-6 sm:p-8">
+          
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-stone-300 mb-6">
+            <div>
+              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-crimson/10 text-crimson text-xs font-bold mb-2">
+                <i data-lucide="brain-circuit" class="w-3.5 h-3.5"></i>
+                <span>Tutor Socrático Académico</span>
+              </div>
+              <h2 class="text-2xl sm:text-3xl font-extrabold text-stone-900">Laboratorio de IA</h2>
+              <p class="text-xs sm:text-sm text-stone-600 font-normal">
+                Prueba tus borradores de proyectos, hipótesis o problemas conceptuales. Este tutor tiene la instrucción de cuestionarte y jamás redactar el trabajo en tu lugar.
+              </p>
+            </div>
+
+            <!-- Modos Socráticos Académicos -->
+            <div class="flex flex-wrap gap-2">
+              <button onclick="changeLabMode('socratico')" id="lab-mode-socratico" class="px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-crimson text-white border-crimson">
+                Tutor Socrático
+              </button>
+              <button onclick="changeLabMode('auditor')" id="lab-mode-auditor" class="px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-stone-200 text-stone-800 border-stone-300 hover:bg-stone-300">
+                Auditor de Hipótesis
+              </button>
+              <button onclick="changeLabMode('traductor')" id="lab-mode-traductor" class="px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-stone-200 text-stone-800 border-stone-300 hover:bg-stone-300">
+                Traductor Didáctico
+              </button>
+            </div>
+          </div>
+
+          <!-- Ventana de Diálogo -->
+          <div class="bg-white rounded-2xl border border-stone-300 overflow-hidden flex flex-col h-[520px] shadow-sm relative z-10">
+            
+            <!-- Barra superior del chat -->
+            <div class="bg-stone-100 px-4 py-3 border-b border-stone-200 flex items-center justify-between text-xs text-stone-700">
+              <div class="flex items-center gap-2">
+                <span id="lab-status-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                <span id="lab-mode-title" class="font-bold text-stone-900">Modo: Tutor Socrático (Preguntas Guía)</span>
+              </div>
+              <button type="button" onclick="clearLabChat()" class="text-stone-500 hover:text-crimson transition flex items-center gap-1 font-medium">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                <span>Reiniciar sesión</span>
+              </button>
+            </div>
+
+            <!-- Lista de mensajes -->
+            <div id="lab-messages-container" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4 text-xs sm:text-sm">
+              <div class="bg-stone-50 p-4 rounded-2xl border border-stone-200 max-w-[85%] space-y-2">
+                <div class="flex items-center gap-2 font-bold text-crimson text-xs">
+                  <i data-lucide="sparkles" class="w-4 h-4"></i>
+                  <span>Tutor Académico</span>
+                </div>
+                <p class="text-stone-700 leading-relaxed">
+                  Hola. Estoy configurado para ayudarte a profundizar en tus temas de estudio y afinar tus entregables. 
+                  <strong>Importante:</strong> no redactaré párrafos finales ni resolveré tus tareas automáticamente. Te haré preguntas reflexivas para que tú mismo desarrolles y defiendas tus argumentos. ¿En qué propuesta o concepto estás trabajando hoy?
+                </p>
+              </div>
+            </div>
+
+            <!-- Indicador de carga -->
+            <div id="lab-loading-indicator" class="hidden px-4 py-2 bg-stone-50 border-t border-stone-200 flex items-center gap-2 text-xs text-stone-600">
+              <div class="w-3.5 h-3.5 border-2 border-crimson border-t-transparent rounded-full animate-spin"></div>
+              <span>Analizando argumentos y formulando preguntas pedagógicas...</span>
+            </div>
+
+            <!-- Input y Formulario de Envío (completamente interactivo) -->
+            <div class="p-3 bg-stone-50 border-t border-stone-200 relative z-20">
+              <form id="lab-chat-form" class="flex gap-2" onsubmit="event.preventDefault(); submitUserMessage();">
+                <input 
+                  type="text" 
+                  id="lab-user-input" 
+                  name="userQuery"
+                  autocomplete="off"
+                  placeholder="Escribe tu hipótesis, borrador o duda conceptual..." 
+                  class="flex-1 px-4 py-3 rounded-xl border border-stone-300 text-xs sm:text-sm focus:ring-2 focus:ring-crimson focus:border-crimson outline-none bg-white text-stone-900 cursor-text select-text"
+                >
+                <button 
+                  type="button" 
+                  id="lab-send-button"
+                  onclick="submitUserMessage()"
+                  class="px-6 py-3 rounded-xl bg-crimson hover:bg-crimson-dark active:scale-95 text-white font-bold text-xs sm:text-sm transition flex items-center gap-2 shadow-sm cursor-pointer"
+                >
+                  <i data-lucide="send" class="w-4 h-4"></i>
+                  <span>Enviar</span>
+                </button>
+              </form>
+            </div>
+
+          </div>
+
+          <!-- Atajos de prueba académica -->
+          <div class="mt-4 flex flex-wrap items-center gap-2 text-xs">
+            <span class="text-stone-500 font-semibold">Ejemplos de consulta:</span>
+            <button type="button" onclick="injectLabSample('Quiero diseñar un proyecto para reducir el desperdicio de alimentos en mi facultad, pero no sé cómo medir el impacto real.')" class="px-3 py-1 rounded-lg bg-stone-200/70 hover:bg-stone-200 border border-stone-300 text-stone-700 transition">Medición de Impacto</button>
+            <button type="button" onclick="injectLabSample('No entiendo la diferencia conceptual entre correlación y causalidad en mi materia de estadística.')" class="px-3 py-1 rounded-lg bg-stone-200/70 hover:bg-stone-200 border border-stone-300 text-stone-700 transition">Estadística Teórica</button>
+            <button type="button" onclick="injectLabSample('Tengo la hipótesis de que las microfinanzas siempre reducen la pobreza en zonas rurales, pero mi asesor dice que está sesgada.')" class="px-3 py-1 rounded-lg bg-stone-200/70 hover:bg-stone-200 border border-stone-300 text-stone-700 transition">Sesgo en Hipótesis</button>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ==================== SECCIÓN 4: FILTRO ROTA DE INTEGRIDAD ==================== -->
+      <section id="sec-rota" class="hidden max-w-4xl mx-auto space-y-8">
+        
+        <div class="carta-pergamino rounded-3xl p-6 sm:p-10">
+          
+          <div class="text-center max-w-xl mx-auto mb-8">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-crimson/10 text-crimson text-xs font-bold mb-3">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+              <span>Evaluación de Honestidad y Rigor Académico</span>
+            </div>
+            <h2 class="text-3xl font-extrabold text-stone-900">La Brújula ROTA</h2>
+            <p class="text-sm text-stone-600 mt-1 font-normal">
+              Aplica estos 4 filtros indispensables a tu trabajo antes de subirlo o entregarlo a tu profesor para garantizar autoría y comprensión legítima.
+            </p>
+          </div>
+
+          <div class="bg-stone-900 text-stone-100 p-6 rounded-2xl max-w-md mx-auto shadow-xl text-center mb-8 border border-stone-700">
+            <p class="text-xs uppercase tracking-widest text-brass font-bold">Estado de Validación de Entrega</p>
+            <p id="rota-score-text" class="text-3xl font-extrabold text-white mt-1">0 de 4 Criterios Aprobados</p>
+            
+            <div class="w-full bg-stone-700 h-2.5 rounded-full mt-4 overflow-hidden">
+              <div id="rota-progress-bar" class="bg-crimson h-full w-0 transition-all duration-300"></div>
+            </div>
+            
+            <p id="rota-feedback-msg" class="text-xs text-stone-400 mt-3 font-normal">
+              Marca las verificaciones correspondientes a tu proceso de trabajo.
+            </p>
+          </div>
+
+          <div class="space-y-4">
+            
+            <label class="flex items-start gap-4 p-4 rounded-2xl border border-stone-300 bg-white/80 hover:bg-white transition cursor-pointer select-none shadow-sm">
+              <input type="checkbox" id="check-rota-r" onchange="evaluateRotaScore()" class="mt-1 w-5 h-5 rounded text-crimson focus:ring-crimson border-stone-400">
+              <div class="space-y-1">
+                <span class="font-bold text-stone-900 text-sm sm:text-base flex items-center gap-2">
+                  <span class="text-crimson font-mono font-bold">R</span> | Relación con el Aprendizaje Significativo
+                </span>
+                <p class="text-xs sm:text-sm text-stone-600">
+                  ¿Utilizaste la herramienta para desglosar la estructura, resolver dudas conceptuales y ejercitar el razonamiento, y no simplemente para sustituir la lectura y el esfuerzo propio?
+                </p>
+              </div>
+            </label>
+
+            <label class="flex items-start gap-4 p-4 rounded-2xl border border-stone-300 bg-white/80 hover:bg-white transition cursor-pointer select-none shadow-sm">
+              <input type="checkbox" id="check-rota-o" onchange="evaluateRotaScore()" class="mt-1 w-5 h-5 rounded text-crimson focus:ring-crimson border-stone-400">
+              <div class="space-y-1">
+                <span class="font-bold text-stone-900 text-sm sm:text-base flex items-center gap-2">
+                  <span class="text-crimson font-mono font-bold">O</span> | Otra Mirada (Auditoría de Puntos Ciegos)
+                </span>
+                <p class="text-xs sm:text-sm text-stone-600">
+                  ¿Pusiste a prueba tu planteamiento pidiéndole a la IA que actuara como un evaluador crítico para detectar sesgos, supuestos débiles y contraargumentos posibles?
+                </p>
+              </div>
+            </label>
+
+            <label class="flex items-start gap-4 p-4 rounded-2xl border border-stone-300 bg-white/80 hover:bg-white transition cursor-pointer select-none shadow-sm">
+              <input type="checkbox" id="check-rota-t" onchange="evaluateRotaScore()" class="mt-1 w-5 h-5 rounded text-crimson focus:ring-crimson border-stone-400">
+              <div class="space-y-1">
+                <span class="font-bold text-stone-900 text-sm sm:text-base flex items-center gap-2">
+                  <span class="text-crimson font-mono font-bold">T</span> | Test de la Pantalla Apagada
+                </span>
+                <p class="text-xs sm:text-sm text-stone-600">
+                  <strong>La prueba definitiva:</strong> Si tu docente te pide cerrar la computadora o apagar la pantalla, ¿puedes explicar con tus propias palabras el 100% de lo redactado en tu entrega?
+                </p>
+              </div>
+            </label>
+
+            <label class="flex items-start gap-4 p-4 rounded-2xl border border-stone-300 bg-white/80 hover:bg-white transition cursor-pointer select-none shadow-sm">
+              <input type="checkbox" id="check-rota-a" onchange="evaluateRotaScore()" class="mt-1 w-5 h-5 rounded text-crimson focus:ring-crimson border-stone-400">
+              <div class="space-y-1">
+                <span class="font-bold text-stone-900 text-sm sm:text-base flex items-center gap-2">
+                  <span class="text-crimson font-mono font-bold">A</span> | Aplicabilidad y Verificación de Fuentes
+                </span>
+                <p class="text-xs sm:text-sm text-stone-600">
+                  ¿Revisaste personalmente las fuentes originales, datos empíricos y fórmulas citadas, asegurándote de que no existen alucinaciones o datos inventados por el modelo?
+                </p>
+              </div>
+            </label>
+
+          </div>
+
+          <div id="rota-success-banner" class="hidden mt-6 p-6 rounded-2xl bg-emerald-900 text-emerald-100 border border-emerald-700 text-center">
+            <h4 class="text-lg font-bold text-emerald-200">¡Validación Ética y Académica Completa!</h4>
+            <p class="text-xs sm:text-sm mt-1">Tu proceso demuestra autoría genuina, comprensión profunda y pensamiento crítico sólido. Tu entrega está lista para ser presentada.</p>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ==================== SECCIÓN 5: CASOS PRÁCTICOS ==================== -->
+      <section id="sec-casos" class="hidden max-w-5xl mx-auto space-y-6">
+        
+        <div class="carta-pergamino rounded-3xl p-6 sm:p-8">
+          
+          <div class="mb-6">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-crimson/10 text-crimson text-xs font-bold mb-2">
+              <i data-lucide="library" class="w-3.5 h-3.5"></i>
+              <span>Metodología en la Práctica</span>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-stone-900">Casos Prácticos de Aprendizaje Activo por Disciplina</h2>
+            <p class="text-sm text-stone-600 font-normal">
+              Explora ejemplos estructurados listos para aplicar en tus materias sin caer en la copia pasiva.
+            </p>
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-6">
+            
+            <div class="bg-white p-5 rounded-2xl border border-stone-300 space-y-3 shadow-sm flex flex-col justify-between">
+              <div class="space-y-2">
+                <div class="w-9 h-9 rounded-xl bg-crimson/10 text-crimson flex items-center justify-center font-bold">
+                  <i data-lucide="target" class="w-5 h-5"></i>
+                </div>
+                <h3 class="font-bold text-stone-900 text-base">Proyectos de Impacto y RSE</h3>
+                <p class="text-xs text-stone-600">Auditoría previa de indicadores y factibilidad comunitaria antes de la entrega del reporte.</p>
+                <div class="p-3 bg-stone-50 rounded-xl border border-stone-200 text-[11px] font-mono text-stone-700">
+                  "Actúa como evaluador estricto de proyectos sociales. Analiza este plan de acción y encuentra 3 riesgos operativos que no estoy considerando..."
+                </div>
+              </div>
+              <button type="button" onclick="copyPredefinedPrompt('Actúa como evaluador estricto de proyectos sociales. Analiza mi plan de acción y encuentra 3 riesgos operativos que no estoy considerando. Formúlame preguntas para ayudarme a crear un plan de mitigación.')" class="w-full py-2 rounded-lg bg-crimson hover:bg-crimson-dark text-white text-xs font-bold transition">
+                Copiar Prompt
+              </button>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-stone-300 space-y-3 shadow-sm flex flex-col justify-between">
+              <div class="space-y-2">
+                <div class="w-9 h-9 rounded-xl bg-grape-light text-grape flex items-center justify-center font-bold">
+                  <i data-lucide="binary" class="w-5 h-5"></i>
+                </div>
+                <h3 class="font-bold text-stone-900 text-base">Ingeniería y Ciencias Exactas</h3>
+                <p class="text-xs text-stone-600">Comprensión conceptual de teoremas matemáticos o algoritmos antes de proceder a la resolución.</p>
+                <div class="p-3 bg-stone-50 rounded-xl border border-stone-200 text-[11px] font-mono text-stone-700">
+                  "No resuelvas el ejercicio numérico. Explícame el principio físico o matemático fundamental detrás de esta fórmula mediante una analogía práctica..."
+                </div>
+              </div>
+              <button type="button" onclick="copyPredefinedPrompt('No resuelvas el ejercicio numérico. Explícame el principio físico fundamental detrás de esta fórmula mediante una analogía visual cotidiana. Luego pídeme que resuelva el primer paso.')" class="w-full py-2 rounded-lg bg-grape hover:bg-grape-dark text-white text-xs font-bold transition">
+                Copiar Prompt
+              </button>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-stone-300 space-y-3 shadow-sm flex flex-col justify-between">
+              <div class="space-y-2">
+                <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
+                  <i data-lucide="book-open-check" class="w-5 h-5"></i>
+                </div>
+                <h3 class="font-bold text-stone-900 text-base">Investigación y Humanidades</h3>
+                <p class="text-xs text-stone-600">Detección de falacias argumentativas y consistencia en el marco metodológico de tesis.</p>
+                <div class="p-3 bg-stone-50 rounded-xl border border-stone-200 text-[11px] font-mono text-stone-700">
+                  "Actúa como revisor de tesis. Lee mi justificación y detecta contradicciones lógicas o supuestos no sustentados empíricamente..."
+                </div>
+              </div>
+              <button type="button" onclick="copyPredefinedPrompt('Actúa como un revisor de tesis riguroso. Lee mi justificación y detecta contradicciones lógicas o supuestos no fundamentados empíricamente. Hazme preguntas de sustentación oral.')" class="w-full py-2 rounded-lg bg-stone-800 hover:bg-stone-900 text-white text-xs font-bold transition">
+                Copiar Prompt
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Pie de página discreto -->
+      <footer class="pt-6 pb-4 text-center border-t border-stone-300">
+        <p class="text-xs text-stone-500 font-medium">
+          AprendeConIA • Metodología desarrollada por <a href="https://instagram.com/itsvaleriaarceo" target="_blank" rel="noopener noreferrer" class="text-crimson font-bold hover:underline">@itsvaleriaarceo</a> • Sígueme en Instagram para aprender más sobre IA y metodologías de impacto
+        </p>
+      </footer>
+
+    </div>
+  </main>
+
+  <!-- Modal para Configurar Google Gemini API Key (Opcional) -->
+  <div id="api-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="carta-pergamino max-w-md w-full p-6 rounded-3xl shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-stone-300">
+        <h3 class="font-bold text-stone-900 text-base flex items-center gap-2">
+          <i data-lucide="key" class="w-4 h-4 text-crimson"></i>
+          Configurar Conexión Gemini
+        </h3>
+        <button type="button" onclick="closeApiKeyModal()" class="text-stone-400 hover:text-stone-700">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-stone-600 leading-relaxed">
+        El laboratorio incluye un <strong>Tutor Socrático Autónomo</strong> que funciona de inmediato sin necesidad de ninguna clave. Si quieres conectarlo con la API oficial de Google Gemini en vivo, puedes pegar tu API Key aquí.
+      </p>
+
+      <div class="space-y-1.5">
+        <label class="text-[11px] font-bold uppercase tracking-wider text-stone-700">Google Gemini API Key</label>
+        <input type="password" id="custom-api-key-input" placeholder="AIzaSy..." class="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-crimson outline-none bg-white">
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button type="button" onclick="saveCustomApiKey()" class="flex-1 py-2.5 rounded-xl bg-crimson hover:bg-crimson-dark text-white font-bold text-xs transition">
+          Guardar y Conectar
+        </button>
+        <button type="button" onclick="resetToAutonomousMode()" class="px-4 py-2.5 rounded-xl bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold text-xs transition">
+          Usar Tutor Autónomo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notificación Toast Flotante -->
+  <div id="system-toast" class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 bg-stone-900 text-stone-100 text-xs px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 border border-stone-700 pointer-events-none">
+    <i data-lucide="check" class="w-4 h-4 text-emerald-400"></i>
+    <span id="toast-message-text">Acción completada exitosamente</span>
+  </div>
+
+  <script type="module">
+    import { GoogleGenAI } from '@google/genai';
+
+    let userConfiguredApiKey = localStorage.getItem('user_gemini_api_key') || "";
+    let activeLabMode = 'socratico';
+    let conversationHistory = [];
+
+    // Sistema de respuestas socráticas inteligentes autónomas (para cuando no hay API key)
+    function generateAutonomousSocraticResponse(userText, mode) {
+      const lower = userText.toLowerCase();
+
+      // Detección de intentos de "hacer trampa"
+      if (lower.includes('haz mi') || lower.includes('hazme el') || lower.includes('escribe mi') || lower.includes('dame la respuesta') || lower.includes('resuelve')) {
+        return `**Recuerda la regla de oro del aprendizaje activo:**
+Como tu tutor académico, no puedo redactar ni resolver la tarea por ti, porque eso te dejaría sin herramientas para defender tu trabajo en clase.
+
+En su lugar, analicemos el problema juntos:
+1. ¿Cuál es el objetivo principal o la pregunta central que te asignaron?
+2. ¿Qué ideas iniciales o intentos de solución se te han ocurrido hasta ahora?
+
+Escribe tu primer borrador o tus dudas clave y lo analizamos paso a paso.`;
+      }
+
+      if (mode === 'socratico') {
+        return `**Análisis pedagógico de tu planteamiento:**
+Has puesto sobre la mesa un punto de partida interesante: *"buscar solucionar o estructurar este desafío"*. Sin embargo, antes de avanzar a la solución final, necesitamos fortalecer los cimientos de tu argumento.
+
+**Preguntas socráticas para reflexionar:**
+1. **¿Cuál es la causa raíz del problema?** ¿Qué datos o evidencias sustentan que esta dificultad es prioritaria y no un síntoma secundario?
+2. **¿Cuáles son las variables clave?** Si tuvieras que explicarle este desafío a alguien que no sabe nada del tema en dos minutos, ¿cuáles serían los 3 conceptos esenciales?
+3. **¿Cómo sabrás que tu propuesta funcionó?** ¿Qué indicador cuantitativo o cualitativo demostrará el éxito de tu entrega?
+
+¿Qué responderías a la primera pregunta?`;
+      } else if (mode === 'auditor') {
+        return `**Informe de Auditoría Académica y Puntos Ciegos:**
+Revisando tu planteamiento con el rigor que aplicaría un comité evaluador, detecto dos áreas vulnerables que debes blindar:
+
+1. **Riesgo de Supuestos No Validados:** Asumes que los involucrados o los datos se comportarán como esperas. ¿Qué pasaría si la muestra no responde o los recursos se reducen al 50%?
+2. **Definición del Alcance:** El planteamiento parece abarcar demasiado. En una investigación o entrega académica, un alcance amplio sin metodología estricta debilita las conclusiones.
+
+**Desafío para tu propuesta:**
+¿Cómo delimitarías tu propuesta a un objetivo concreto medible antes de defenderla?`;
+      } else {
+        return `**Traducción Didáctica mediante Analogía:**
+Imagina que lo que estás intentando estructurar es como **la arquitectura de un puente**:
+* No puedes empezar decorando los barandales (los textos finales o las conclusiones) si los pilares de carga (el problema central y la metodología) no están firmemente anclados en el lecho del río.
+
+**Para aplicar esta analogía a tu caso:**
+¿Cuáles son actualmente los "pilares de carga" de tu trabajo? Identifica cuál de ellos sientes más débil para que lo reforcemos.`;
+      }
+    }
+
+    // Navegación entre secciones
+    window.navigateSection = function(sectionKey) {
+      const sections = ['manifiesto', 'parts', 'lab', 'rota', 'casos'];
+      const sectionNames = {
+        manifiesto: 'Sección 1: Manifiesto Pedagógico',
+        parts: 'Sección 2: Constructor PARTS',
+        lab: 'Sección 3: Laboratorio de IA (Gemini)',
+        rota: 'Sección 4: Filtro de Integridad ROTA',
+        casos: 'Sección 5: Casos Prácticos'
+      };
+
+      sections.forEach(key => {
+        const secElement = document.getElementById(`sec-${key}`);
+        const navButton = document.getElementById(`nav-btn-${key}`);
+        
+        if (key === sectionKey) {
+          secElement.classList.remove('hidden');
+          navButton.className = 'nav-item w-full px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all duration-200 text-white bg-crimson shadow-md border border-red-500/40';
+        } else {
+          secElement.classList.add('hidden');
+          navButton.className = 'nav-item w-full px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all duration-200 text-stone-300 hover:text-white hover:bg-white/5 border border-transparent';
+        }
+      });
+
+      document.getElementById('active-section-indicator').textContent = sectionNames[sectionKey];
+      if (sectionKey === 'lab') {
+        setTimeout(() => {
+          const input = document.getElementById('lab-user-input');
+          if (input) input.focus();
+        }, 100);
+      }
+      lucide.createIcons();
+    };
+
+    // Efecto sombrero flotante
+    document.addEventListener('click', (event) => {
+      const button = event.target.closest('button');
+      if (!button) return;
+
+      const hat = document.createElement('div');
+      hat.className = 'hat-particle';
+      hat.style.left = `${event.clientX}px`;
+      hat.style.top = `${event.clientY}px`;
+
+      hat.innerHTML = `
+        <svg viewBox="0 0 100 100" width="50" height="50" style="filter: drop-shadow(0 6px 12px rgba(0,0,0,0.3));">
+          <ellipse cx="50" cy="65" rx="44" ry="14" fill="#C29B38" stroke="#69512A" stroke-width="2.5"/>
+          <path d="M26 62 C26 30, 74 30, 74 62 Z" fill="#DDB655" stroke="#69512A" stroke-width="2.5"/>
+          <path d="M26 58 C36 54, 64 54, 74 58 L74 63 C64 59, 36 59, 26 63 Z" fill="#DC2626"/>
+        </svg>
+      `;
+
+      document.body.appendChild(hat);
+      setTimeout(() => hat.remove(), 1000);
+    });
+
+    // Envío y gestión del chat
+    window.submitUserMessage = async function() {
+      const input = document.getElementById('lab-user-input');
+      const userText = input.value.trim();
+      if (!userText) {
+        input.focus();
+        return;
+      }
+
+      appendUserMessage(userText);
+      input.value = '';
+      input.focus();
+
+      conversationHistory.push({ role: 'user', parts: [{ text: userText }] });
+
+      const loader = document.getElementById('lab-loading-indicator');
+      loader.classList.remove('hidden');
+
+      // Si hay API key configurada por el usuario, intentar con SDK oficial de Gemini
+      if (userConfiguredApiKey) {
+        try {
+          const ai = new GoogleGenAI({ apiKey: userConfiguredApiKey });
+          const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: conversationHistory,
+            config: {
+              systemInstruction: `Eres un tutor pedagógico socrático universitario.
+REGLAS:
+1. NUNCA resuelvas la tarea ni redactes el trabajo final por el estudiante.
+2. Si pide que le hagas la tarea, recházalo constructivamente y pídele su propio borrador.
+3. Haz de 2 a 3 preguntas reflexivas para que el alumno construya y fundamente su solución.
+4. Mantén un tono académico, formal y riguroso. Máximo 180 palabras.`,
+              temperature: 0.6,
+            }
+          });
+
+          const replyText = response.text || "Hubo un inconveniente al generar la respuesta. Por favor intenta de nuevo.";
+          conversationHistory.push({ role: 'model', parts: [{ text: replyText }] });
+          appendAiResponse(replyText);
+          loader.classList.add('hidden');
+          return;
+        } catch (err) {
+          console.warn("Fallo en API oficial, activando motor autónomo:", err);
+        }
+      }
+
+      // Motor socrático autónomo de respuesta inmediata
+      setTimeout(() => {
+        const replyText = generateAutonomousSocraticResponse(userText, activeLabMode);
+        conversationHistory.push({ role: 'model', parts: [{ text: replyText }] });
+        appendAiResponse(replyText);
+        loader.classList.add('hidden');
+      }, 700);
+    };
+
+    function appendUserMessage(text) {
+      const container = document.getElementById('lab-messages-container');
+      const div = document.createElement('div');
+      div.className = 'bg-crimson text-white p-3.5 rounded-2xl max-w-[80%] ml-auto shadow-sm break-words';
+      div.textContent = text;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function appendAiResponse(markdownText) {
+      const container = document.getElementById('lab-messages-container');
+      const div = document.createElement('div');
+      div.className = 'bg-stone-50 p-4 rounded-2xl border border-stone-200 max-w-[85%] space-y-2';
+
+      const parsedHtml = markdownText
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br>');
+
+      div.innerHTML = `
+        <div class="flex items-center gap-2 font-bold text-crimson text-xs">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+          <span>Tutor Académico</span>
+        </div>
+        <div class="text-stone-700 leading-relaxed">${parsedHtml}</div>
+      `;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+      lucide.createIcons();
+    }
+
+    window.injectLabSample = function(text) {
+      const input = document.getElementById('lab-user-input');
+      input.value = text;
+      input.focus();
+    };
+
+    window.changeLabMode = function(mode) {
+      activeLabMode = mode;
+      ['socratico', 'auditor', 'traductor'].forEach(m => {
+        const btn = document.getElementById(`lab-mode-${m}`);
+        if (m === mode) {
+          btn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-crimson text-white border-crimson';
+        } else {
+          btn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold border transition-all bg-stone-200 text-stone-800 border-stone-300 hover:bg-stone-300';
+        }
+      });
+
+      const modeTitles = {
+        socratico: 'Modo: Tutor Socrático (Preguntas Guía)',
+        auditor: 'Modo: Auditor de Hipótesis (Objeciones y Puntos Ciegos)',
+        traductor: 'Modo: Traductor Didáctico (Analogías Comprensibles)'
+      };
+      document.getElementById('lab-mode-title').textContent = modeTitles[mode];
+      appendAiResponse(`*Has activado el **${modeTitles[mode]}**. Comparte tu planteamiento o hipótesis para comenzar el análisis.*`);
+    };
+
+    window.clearLabChat = function() {
+      conversationHistory = [];
+      const container = document.getElementById('lab-messages-container');
+      container.innerHTML = `
+        <div class="bg-stone-50 p-4 rounded-2xl border border-stone-200 max-w-[85%] space-y-2">
+          <div class="flex items-center gap-2 font-bold text-crimson text-xs">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+            <span>Tutor Académico</span>
+          </div>
+          <p class="text-stone-700 leading-relaxed">
+            Sesión reiniciada. ¿Qué propuesta o reto conceptual abordaremos en esta consulta?
+          </p>
+        </div>
+      `;
+      lucide.createIcons();
+      displaySystemToast('Sesión de diálogo reiniciada');
+      document.getElementById('lab-user-input').focus();
+    };
+
+    // Modal de API Key opcional
+    window.openApiKeyModal = function() {
+      document.getElementById('api-modal').classList.remove('hidden');
+      document.getElementById('custom-api-key-input').value = userConfiguredApiKey;
+    };
+
+    window.closeApiKeyModal = function() {
+      document.getElementById('api-modal').classList.add('hidden');
+    };
+
+    window.saveCustomApiKey = function() {
+      const val = document.getElementById('custom-api-key-input').value.trim();
+      userConfiguredApiKey = val;
+      localStorage.setItem('user_gemini_api_key', val);
+      document.getElementById('api-status-badge').textContent = val ? 'Conexión: Gemini en Vivo' : 'Conexión: Tutor Autónomo';
+      window.closeApiKeyModal();
+      displaySystemToast(val ? 'Conectado a Google Gemini API' : 'Activado Tutor Autónomo');
+    };
+
+    window.resetToAutonomousMode = function() {
+      userConfiguredApiKey = "";
+      localStorage.removeItem('user_gemini_api_key');
+      document.getElementById('api-status-badge').textContent = 'Conexión: Tutor Autónomo';
+      window.closeApiKeyModal();
+      displaySystemToast('Activado Tutor Socrático Autónomo');
+    };
+
+    // Constructor PARTS
+    window.compilePartsPrompt = function() {
+      const p = document.getElementById('input-p').value.trim();
+      const a = document.getElementById('input-a').value.trim();
+      const r = document.getElementById('input-r').value.trim();
+      const t = document.getElementById('input-t').value.trim();
+      const s = document.getElementById('input-s').value.trim();
+
+      const fullPrompt = `[ESTRUCTURA DE APRENDIZAJE ACTIVO - MÉTODO PARTS]
+
+P | PAPEL:
+${p}
+
+A | ACCIÓN:
+${a}
+
+R | REFERENCIAS Y PÚBLICO:
+${r}
+
+T | TONO:
+${t}
+
+S | SALIDA Y CONDICIONES:
+${s}
+
+---
+CONTEXTO / MI BORRADOR DE TRABAJO:
+[Pega aquí el texto de tu propuesta, hipótesis o ejercicio para ser analizado]`;
+
+      document.getElementById('compiled-prompt-output').textContent = fullPrompt;
+      document.getElementById('prompt-char-count').textContent = `${fullPrompt.length} caracteres`;
+    };
+
+    window.setPartsArchetype = function(archetype) {
+      if (archetype === 'auditor') {
+        document.getElementById('input-p').value = "Auditor metodológico y revisor crítico de proyectos de grado";
+        document.getElementById('input-a').value = "Analiza las variables y supuestos de mi propuesta e indica 3 posibles fallas lógicas que un jurado cuestionaría.";
+      } else if (archetype === 'evaluador') {
+        document.getElementById('input-p').value = "Jurado evaluador de convocatorias de investigación e innovación";
+        document.getElementById('input-a').value = "Evalúa la viabilidad real y el alcance de mi solución formulando 3 preguntas de defensa oral.";
+      } else if (archetype === 'tutor') {
+        document.getElementById('input-p').value = "Tutor pedagógico socrático especializado en aprendizaje activo";
+        document.getElementById('input-a').value = "Guíame paso a paso para resolver este problema mediante preguntas orientadoras sin darme la solución hecha.";
+      }
+      window.compilePartsPrompt();
+      displaySystemToast('Arquetipo cargado en el constructor PARTS');
+    };
+
+    window.copyGeneratedPrompt = function() {
+      const text = document.getElementById('compiled-prompt-output').textContent;
+      copyTextToClipboard(text);
+      displaySystemToast('Instrucción copiada al portapapeles');
+    };
+
+    window.sendToAiLab = function() {
+      const text = document.getElementById('compiled-prompt-output').textContent;
+      window.navigateSection('lab');
+      document.getElementById('lab-user-input').value = `Quiero poner a prueba este marco estructurado:\n${text}`;
+      document.getElementById('lab-user-input').focus();
+    };
+
+    // Filtro ROTA
+    window.evaluateRotaScore = function() {
+      const r = document.getElementById('check-rota-r').checked;
+      const o = document.getElementById('check-rota-o').checked;
+      const t = document.getElementById('check-rota-t').checked;
+      const a = document.getElementById('check-rota-a').checked;
+
+      const completedCount = [r, o, t, a].filter(Boolean).length;
+      const progressBar = document.getElementById('rota-progress-bar');
+      const scoreText = document.getElementById('rota-score-text');
+      const feedbackMsg = document.getElementById('rota-feedback-msg');
+      const banner = document.getElementById('rota-success-banner');
+
+      const percentages = [0, 25, 50, 75, 100];
+      progressBar.style.width = `${percentages[completedCount]}%`;
+      scoreText.textContent = `${completedCount} de 4 Criterios Aprobados`;
+
+      const messages = [
+        "Marca las verificaciones correspondientes a tu proceso de trabajo.",
+        "Nivel preliminar: Has iniciado el proceso ético de revisión.",
+        "Nivel intermedio: Asegúrate de comprobar el test de la pantalla apagada.",
+        "Nivel avanzado: Falta únicamente la verificación formal de fuentes.",
+        "Excelente: Cumplimiento ético y pedagógico total verificado."
+      ];
+      feedbackMsg.textContent = messages[completedCount];
+
+      if (completedCount === 4) {
+        banner.classList.remove('hidden');
+        displaySystemToast('¡Filtro ROTA completado con éxito!');
+      } else {
+        banner.classList.add('hidden');
+      }
+    };
+
+    window.copyPredefinedPrompt = function(promptContent) {
+      copyTextToClipboard(promptContent);
+      displaySystemToast('Prompt copiado al portapapeles');
+    };
+
+    function copyTextToClipboard(text) {
+      const tempTextArea = document.createElement('textarea');
+      tempTextArea.value = text;
+      document.body.appendChild(tempTextArea);
+      tempTextArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempTextArea);
+    }
+
+    function displaySystemToast(message) {
+      const toast = document.getElementById('system-toast');
+      document.getElementById('toast-message-text').textContent = message;
+      toast.classList.remove('translate-y-24', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-24', 'opacity-0');
+      }, 3000);
+    }
+
+    // Inicialización del DOM
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      window.compilePartsPrompt();
+      window.evaluateRotaScore();
+
+      if (userConfiguredApiKey) {
+        document.getElementById('api-status-badge').textContent = 'Conexión: Gemini en Vivo';
+      }
+
+      // Enter para enviar en el input
+      const input = document.getElementById('lab-user-input');
+      if (input) {
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            window.submitUserMessage();
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
