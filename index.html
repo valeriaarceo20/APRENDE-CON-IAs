@@ -192,7 +192,7 @@
     <!-- Navegación Primaria -->
     <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
       
-      <button onclick="navigateSection('manifiesto')" id="nav-btn-manifiesto" class="nav-item w-full px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all duration-200 text-stone-300 hover:text-white hover:bg-white/5 border border-transparent">
+      <button onclick="navigateSection('manifiesto')" id="nav-btn-manifiesto" class="nav-item w-full px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all duration-200 text-white bg-crimson shadow-md border border-red-500/40">
         <i data-lucide="book-marked" class="w-4 h-4 text-brass"></i>
         <span>1. Manifiesto Pedagógico</span>
       </button>
@@ -202,7 +202,7 @@
         <span>2. Constructor PARTS</span>
       </button>
 
-      <button onclick="navigateSection('lab')" id="nav-btn-lab" class="nav-item w-full px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all duration-200 text-white bg-crimson shadow-md border border-red-500/40">
+      <button onclick="navigateSection('lab')" id="nav-btn-lab" class="nav-item w-full px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all duration-200 text-stone-300 hover:text-white hover:bg-white/5 border border-transparent">
         <i data-lucide="brain-circuit" class="w-4 h-4 text-red-100"></i>
         <span>3. Laboratorio de IA (Gemini)</span>
       </button>
@@ -247,7 +247,7 @@
           </svg>
         </div>
         <div>
-          <span id="active-section-indicator" class="text-xs uppercase tracking-wider font-bold text-crimson">Sección 3: Laboratorio de IA (Gemini)</span>
+          <span id="active-section-indicator" class="text-xs uppercase tracking-wider font-bold text-crimson">Sección 1: Manifiesto Pedagógico</span>
           <p class="text-[11px] text-stone-500 font-normal">Formación universitaria con criterio, honestidad y profundidad</p>
         </div>
       </div>
@@ -265,7 +265,7 @@
     <div class="flex-1 overflow-y-auto p-4 sm:p-8 space-y-8">
 
       <!-- ==================== SECCIÓN 1: MANIFIESTO PEDAGÓGICO ==================== -->
-      <section id="sec-manifiesto" class="hidden max-w-5xl mx-auto space-y-8">
+      <section id="sec-manifiesto" class="max-w-5xl mx-auto space-y-8">
         
         <div class="carta-pergamino rounded-3xl p-8 sm:p-12 border-2 border-stone-300/80">
           <div class="max-w-3xl space-y-5 relative z-10">
@@ -471,7 +471,7 @@
       </section>
 
       <!-- ==================== SECCIÓN 3: LABORATORIO DE TUTORÍA IA ==================== -->
-      <section id="sec-lab" class="max-w-5xl mx-auto space-y-6">
+      <section id="sec-lab" class="hidden max-w-5xl mx-auto space-y-6">
         
         <div class="carta-pergamino rounded-3xl p-6 sm:p-8">
           
@@ -536,7 +536,7 @@
               <span>Analizando argumentos y formulando preguntas pedagógicas...</span>
             </div>
 
-            <!-- Input y Formulario de Envío (completamente interactivo) -->
+            <!-- Input y Formulario de Envío -->
             <div class="p-3 bg-stone-50 border-t border-stone-200 relative z-20">
               <form id="lab-chat-form" class="flex gap-2" onsubmit="event.preventDefault(); submitUserMessage();">
                 <input 
@@ -1170,6 +1170,7 @@ CONTEXTO / MI BORRADOR DE TRABAJO:
     // Inicialización del DOM
     window.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
+      window.navigateSection('manifiesto');
       window.compilePartsPrompt();
       window.evaluateRotaScore();
 
